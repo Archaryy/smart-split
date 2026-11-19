@@ -1,0 +1,76 @@
+
+# =========================
+# Python
+# =========================
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+
+# =========================
+# Node.js / Vite
+# =========================
+
+node_modules/
+dist/
+.vite/
+.npm/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# =========================
+# Environment variables
+# =========================
+
+.env
+.env.*
+!.env.example
+
+# =========================
+# IDE and operating system
+# =========================
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# SmartSplit generated files
+# =========================
+
+# Uploaded receipt images
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Downloaded OCR models
+backend/.paddleocr/
+backend/paddleocr/
+backend/models/
+
+# Temporary files
+*.tmp
+*.bak
+*.log

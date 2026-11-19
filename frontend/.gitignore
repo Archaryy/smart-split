@@ -22,3 +22,23 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# Node
+node_modules/
+dist/
+
+# Uploaded receipts
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# OCR models
+backend/models/
+
+# Editor
+.vscode/
