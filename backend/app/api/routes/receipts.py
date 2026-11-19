@@ -3,7 +3,9 @@ from app.schemas.receipt import ReceiptUploadResponse
 from PIL import Image
 from pathlib import Path
 import io
-import uuid
+from uuid import UUID, uuid4
+from app.services.ocr_service import extract_text
+from app.services.receipt_parser import parse_receipt_text
 
 router = APIRouter(
     prefix="/api/receipts",
@@ -52,7 +54,7 @@ async def upload_receipt(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=f"Unsupported image format: {image_format}. Allowed formats: {list(ALLOWED_FORMATS.keys())}")
     
     #generate unique filename
-    receipt_id = str(uuid.uuid4())
+    receipt_id = str(uuid4())
     extension = ALLOWED_FORMATS[image_format]
     saved_filename = f"{receipt_id}.{extension}"
 
@@ -61,12 +63,65 @@ async def upload_receipt(file: UploadFile = File(...)):
     file_path.write_bytes(contents)
 
     return {
-        "message": "Receipt uploaded successfully.",
-        "filename": saved_filename,
-        "original_filename": file.filename,
-        "format": image_format,
-        "width": width,
-        "height": height,
-        "size_bytes": len(contents),
-        "status": "pending_ocr"
+    "message": "Receipt uploaded successfully.",
+    "receipt_id": receipt_id,
+    "filename": saved_filename,
+    "original_filename": file.filename,
+    "format": image_format,
+    "width": width,
+    "height": height,
+    "size_bytes": len(contents),
+    "status": "pending_ocr"
+}
+
+
+@router.post("/{receipt_id}/analyze")
+async def analyze_receipt(receipt_id: str):
+
+    # 1. Validate receipt ID
+    try:
+        receipt_id = str(UUID(receipt_id))
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid receipt ID"
+        )
+
+    # 2. Find uploaded image
+    file_path = None
+
+    for extension in ["jpg", "png", "webp"]:
+        candidate = UPLOAD_DIR / f"{receipt_id}.{extension}"
+
+        if candidate.exists():
+            file_path = candidate
+            break
+
+    if file_path is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Receipt image not found"
+        )
+
+    # 3. Run OCR
+    try:
+        ocr_result = extract_text(file_path)
+
+        # 4. Parse recognized text
+        parsed_receipt = parse_receipt_text(ocr_result)
+
+    except Exception as error:
+        print(f"Receipt analysis failed: {error}")
+
+        raise HTTPException(
+            status_code=500,
+            detail="Receipt analysis failed"
+        )
+
+    # 5. Return combined results
+    return {
+        "receipt_id": receipt_id,
+        "status": "analyzed",
+        "ocr": ocr_result,
+        "receipt": parsed_receipt
     }

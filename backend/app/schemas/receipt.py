@@ -6,7 +6,7 @@ from typing import Literal
 class ReceiptUploadResponse(BaseModel):
     message: str
     receipt_id: str
-    filenamae: str
+    filename: str
     original_filename: str
     format: Literal["JPEG", "PNG", "WEBP"]
     width: int= Field(gt = 0)
