@@ -99,3 +99,21 @@ test("no people yields no shares", () => {
     assert.deepEqual(result.shares, []);
     assert.equal(result.unassigned.total, 100);
 });
+
+test("per-item shares add up to each person's item total", () => {
+    const result = computeSplit({
+        items: [
+            { id: 1, total: 100, assigned: ["a", "b", "c"] },
+            { id: 2, total: 50, assigned: ["a"] }
+        ],
+        people: people("a", "b", "c"),
+        charges: none,
+        decimals: 0
+    });
+
+    for (const share of result.shares) {
+        assert.equal(sum(result.itemShares[share.id].map((line) => line.amount)), share.items);
+    }
+    assert.deepEqual(result.itemShares.a.map((line) => line.id), [1, 2]);
+    assert.deepEqual(result.itemShares.b.map((line) => line.id), [1]);
+});

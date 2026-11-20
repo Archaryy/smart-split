@@ -36,7 +36,8 @@ export function allocate(total, weights) {
  * @param people   [{ id }]
  * @param charges  { tax, service, discount, rounding } — amounts to add on top of the items
  * @param decimals 0 for IDR-style currencies, 2 otherwise
- * @returns { shares: [{ id, items, extras, total }], unassigned: {items, extras, total}, total }
+ * @returns { shares: [{ id, items, extras, total }], unassigned: {items, extras, total}, total,
+ *             itemShares: { [personId]: [{ id, amount }] } }   // what each person pays per item
  */
 export function computeSplit({ items, people, charges, decimals }) {
     const factor = 10 ** decimals;
@@ -44,6 +45,7 @@ export function computeSplit({ items, people, charges, decimals }) {
 
     const buckets = [...people.map((person) => person.id), UNASSIGNED];
     const itemMinor = Object.fromEntries(buckets.map((id) => [id, 0]));
+    const itemShares = Object.fromEntries(people.map((person) => [person.id, []]));
 
     for (const item of items) {
         const amount = toMinor(item.total);
@@ -54,7 +56,9 @@ export function computeSplit({ items, people, charges, decimals }) {
         }
 
         allocate(amount, item.assigned.map(() => 1)).forEach((part, index) => {
-            itemMinor[item.assigned[index]] += part;
+            const personId = item.assigned[index];
+            itemMinor[personId] += part;
+            itemShares[personId].push({ id: item.id, amount: part / factor });
         });
     }
 
@@ -87,6 +91,7 @@ export function computeSplit({ items, people, charges, decimals }) {
 
     return {
         shares: rows,
+        itemShares,
         unassigned,
         total: rows.reduce((sum, row) => sum + row.total, unassigned.total)
     };

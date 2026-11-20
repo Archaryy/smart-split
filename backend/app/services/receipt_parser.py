@@ -63,6 +63,10 @@ DATE_TEXT = re.compile(
 )
 TIME_RX = re.compile(r"(?<!\d)\d{1,2}:\d{2}(?::\d{2})?(?!\d)")
 
+# OCR sometimes fuses neighbouring columns: "125,20025,200" is "1  25,200  25,200".
+GLUED_AMOUNTS = re.compile(r"(?:\d{1,3}(?:[.,]\d{3})+){2,}")
+AMOUNT_PART = re.compile(r"\d{1,3}(?:[.,]\d{3})+")
+
 NUMBERED_PREFIX = re.compile(r"^\s*\d{1,2}\s*[.)]\s+(?=\S)")
 
 DETAIL_NO_NAME = re.compile(
@@ -94,7 +98,7 @@ RX = {
         r"harus\s*dibayar|total\s*harga|nett?o\b"
     ),
     "item_count": re.compile(
-        r"total\s*(?:qty|quantity|items?|barang|produk|pcs)|"
+        r"total\s*(?:qty|quantity|[il]te[mnr]s?|barang|produk|pcs)|"
         r"(?:qty|item|items)\s*total|jumlah\s*(?:item|barang|qty)|item\s*count"
     ),
     "subtotal": re.compile(r"sub\s*-?\s*total|subtotal|sub\s*jumlah"),
@@ -370,6 +374,12 @@ def tokenize_row(row: Row) -> None:
                 negative, probe = True, probe[:-1]
 
             probe = _fix_digit_confusions(probe.strip("()"))
+
+            if not MONEY_TOKEN.match(probe) and GLUED_AMOUNTS.fullmatch(probe):
+                for part in AMOUNT_PART.findall(probe):
+                    tokens.append(Token(part, cell.x2, cell.confidence, parse_amount(part), False))
+                continue
+
             money = None
             match = MONEY_TOKEN.match(probe)
             if match and _is_price(probe):
@@ -515,6 +525,21 @@ def interpret_description(description: str, total: Decimal | None) -> ItemParts:
                 return ItemParts(name, quantity, "pcs", unit_price, True)
         if total is not None and unit_price == total and name:
             return ItemParts(name, Decimal(1), "pcs", unit_price, True)
+
+    # OCR sometimes glues the quantity to the unit price: "SUNLG MINT 755 125,200"
+    # is really qty 1 x 25,200. Accept a split only when the arithmetic checks out.
+    if total is not None:
+        head, _, last = stripped.rpartition(" ")
+        glued = re.fullmatch(r"(\d{1,2})(\d{1,3}(?:[.,]\d{3})+)", last)
+        if head and glued:
+            for qty_len in range(1, len(glued.group(1)) + 1):
+                digits = last[:qty_len]
+                rest = last[qty_len:]
+                if not re.fullmatch(r"\d{1,3}(?:[.,]\d{3})+", rest):
+                    continue
+                quantity, unit_price = Decimal(digits), parse_amount(rest)
+                if quantity > 0 and quantity * unit_price == total:
+                    return ItemParts(_clean_name(head), quantity, "pcs", unit_price, True)
 
     match = TRAILING_X_QTY.match(stripped)
     if match:

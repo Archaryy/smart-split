@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { uploadReceipt, analyzeReceipt } from "../services/api";
+import { prepareImage } from "../utils/image";
 import ReceiptReview from "./ReceiptReview";
+import Stepper from "./Stepper";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+// Large phone photos are shrunk before upload, so the limit here is generous.
+const MAX_FILE_SIZE = 25 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const TIPS = [
@@ -13,6 +16,9 @@ const TIPS = [
 
 function ReceiptUploader() {
     const fileInputRef = useRef(null);
+    const cameraInputRef = useRef(null);
+    // Only phones/tablets get a "Take photo" button; on desktop it would just open the file picker.
+    const hasCamera = window.matchMedia("(pointer: coarse)").matches;
 
     const previewRef = useRef("");
 
@@ -62,7 +68,7 @@ function ReceiptUploader() {
 
         if (selectedFile.size > MAX_FILE_SIZE) {
             replaceFile(null);
-            setError("That image is larger than 10 MB. Choose a smaller file.");
+            setError("That image is larger than 25 MB. Choose a smaller file.");
             return;
         }
 
@@ -91,7 +97,7 @@ function ReceiptUploader() {
         setPhase("uploading");
 
         try {
-            const uploadData = await uploadReceipt(file);
+            const uploadData = await uploadReceipt(await prepareImage(file));
 
             setPhase("reading");
 
@@ -130,6 +136,7 @@ function ReceiptUploader() {
 
     return (
         <section className="upload-view">
+            <Stepper current={0} narrow />
             <h1>Upload a receipt</h1>
             <p className="lead">
                 We'll read the items and prices so you can check them before
@@ -191,21 +198,41 @@ function ReceiptUploader() {
 
                         <p className="dropzone-title">Drop a receipt photo here</p>
 
-                        <button
-                            className="button secondary"
-                            type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            Choose image
-                        </button>
+                        <div className="dropzone-buttons">
+                            {hasCamera && (
+                                <button
+                                    className="button primary"
+                                    type="button"
+                                    onClick={() => cameraInputRef.current?.click()}
+                                >
+                                    Take photo
+                                </button>
+                            )}
+                            <button
+                                className="button secondary"
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                Choose image
+                            </button>
+                        </div>
 
-                        <span className="hint">JPG, PNG or WEBP · up to 10 MB</span>
+                        <span className="hint">JPG, PNG or WEBP · up to 25 MB</span>
 
                         <input
                             ref={fileInputRef}
                             className="visually-hidden"
                             type="file"
                             accept="image/jpeg,image/png,image/webp"
+                            onChange={handleFileChange}
+                            tabIndex={-1}
+                        />
+                        <input
+                            ref={cameraInputRef}
+                            className="visually-hidden"
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
                             onChange={handleFileChange}
                             tabIndex={-1}
                         />

@@ -85,6 +85,19 @@ class RealReceipts(unittest.TestCase):
         self.assertEqual(r["reconciliation"]["status"], "ok")
 
 
+class NoisyRealReceipt(unittest.TestCase):
+    """Real OCR output from a degraded photo: columns fused ("125,20025,200"), typos."""
+
+    def test_fused_columns_and_ocr_typos(self):
+        r = parse_receipt_text(load("alfamart_noisy"))
+        self.assertEqual(len(r["items"]), 1)
+        self.assertEqual(r["items"][0]["name"], "SUNLG MINT 755")
+        self.assertEqual(r["items"][0]["quantity"], 1)
+        self.assertEqual(r["items"][0]["total_price"], 25200)
+        self.assertEqual(r["tax"], 2291)
+        self.assertEqual(r["total"], 25200)
+
+
 class LegacyBoxlessInput(unittest.TestCase):
     """OCR lines without boxes still parse (sequential fallback)."""
 
@@ -221,6 +234,22 @@ class Layouts(unittest.TestCase):
         self.assertEqual(r["tax"], 6050)
         self.assertEqual(r["total"], 61050)
         self.assertEqual(r["reconciliation"]["status"], "ok")
+
+    def test_quantity_glued_to_price_by_ocr(self):
+        # OCR read "1   25,200" as "125,200"
+        r = parse_receipt_text(receipt([
+            "ALFAMART", ("SUNLG MINT 755 125,200", "25,200"), ("Total Item 1", "25,200"),
+        ]))
+        self.assertEqual(r["items"][0]["name"], "SUNLG MINT 755")
+        self.assertEqual(r["items"][0]["quantity"], 1)
+        self.assertEqual(r["items"][0]["unit_price"], 25200)
+
+    def test_glued_digits_that_do_not_add_up_stay_in_the_name(self):
+        r = parse_receipt_text(receipt([
+            "TOKO", ("Kabel Data 125,200", "40,000"), ("Total", "40,000"),
+        ]))
+        self.assertEqual(r["items"][0]["total_price"], 40000)
+        self.assertEqual(r["items"][0]["quantity"], 1)
 
     def test_trailing_tax_flag_letters_are_ignored(self):
         r = parse_receipt_text(receipt([

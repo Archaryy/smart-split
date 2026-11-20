@@ -6,7 +6,7 @@ import io
 import logging
 from uuid import UUID, uuid4
 from app.services.ocr_service import extract_text
-from app.services.receipt_parser import parse_receipt_text
+from app.services.receipt_pipeline import read_receipt
 
 logger = logging.getLogger("smartsplit.receipts")
 
@@ -108,12 +108,10 @@ def analyze_receipt(receipt_id: str):
             detail="Receipt image not found"
         )
 
-    # 3. Run OCR
+    # 3. Run OCR and parse, retrying with other image treatments if the first
+    #    read doesn't look trustworthy (faint, tinted or unevenly lit photos).
     try:
-        ocr_result = extract_text(file_path)
-
-        # 4. Parse recognized text
-        parsed_receipt = parse_receipt_text(ocr_result)
+        ocr_result, parsed_receipt = read_receipt(file_path, extract_text)
 
     except Exception:
         logger.exception("Receipt analysis failed for %s", receipt_id)

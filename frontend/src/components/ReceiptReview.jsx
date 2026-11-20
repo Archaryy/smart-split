@@ -7,6 +7,7 @@ import {
     toNumber
 } from "../utils/money";
 import SplitBill from "./SplitBill";
+import Stepper from "./Stepper";
 
 function toEditable(value) {
     return value ? String(value) : "";
@@ -158,6 +159,8 @@ function ReceiptReview({ receipt, ocr, imageUrl, onReset }) {
 
     return (
         <section className="review">
+            <Stepper current={stage === "split" ? 2 : 1} narrow={stage === "split"} />
+
             {splitStarted && (
                 <div hidden={stage !== "split"}>
                     <SplitBill
@@ -172,7 +175,7 @@ function ReceiptReview({ receipt, ocr, imageUrl, onReset }) {
             )}
 
             <div hidden={stage !== "review"}>
-            <div className="review-head">
+            <div className="page-head">
                 <div>
                     <h1>Check the receipt</h1>
                     <p className="lead">Fix anything that was misread, then confirm.</p>
