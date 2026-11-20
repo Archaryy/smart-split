@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { uploadReceipt, analyzeReceipt } from "../services/api";
 import ReceiptReview from "./ReceiptReview";
@@ -6,49 +5,68 @@ import ReceiptReview from "./ReceiptReview";
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
+const TIPS = [
+    "Lay the receipt flat",
+    "Use even lighting, no glare",
+    "Keep the whole receipt in frame"
+];
+
 function ReceiptUploader() {
     const fileInputRef = useRef(null);
+
+    const previewRef = useRef("");
 
     const [file, setFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState("");
     const [isDragging, setIsDragging] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [status, setStatus] = useState("");
+    const [phase, setPhase] = useState("idle"); // idle | uploading | reading
+    const [elapsed, setElapsed] = useState(0);
     const [error, setError] = useState("");
     const [result, setResult] = useState(null);
 
+    const loading = phase !== "idle";
+
+    // The preview URL is created when a file is chosen and released when it
+    // is replaced, cleared, or the component goes away.
+    function replaceFile(nextFile) {
+        if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+
+        previewRef.current = nextFile ? URL.createObjectURL(nextFile) : "";
+        setPreviewUrl(previewRef.current);
+        setFile(nextFile);
+    }
+
+    useEffect(() => () => {
+        if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+    }, []);
+
+    // Reading a receipt can take a while; show that something is happening.
     useEffect(() => {
-        if (!file) {
-            setPreviewUrl("");
-            return;
-        }
+        if (phase !== "reading") return;
 
-        const url = URL.createObjectURL(file);
-        setPreviewUrl(url);
-
-        return () => URL.revokeObjectURL(url);
-    }, [file]);
+        const timer = setInterval(() => setElapsed((s) => s + 1), 1000);
+        return () => clearInterval(timer);
+    }, [phase]);
 
     function selectFile(selectedFile) {
         setError("");
-        setStatus("");
         setResult(null);
 
         if (!selectedFile) return;
 
         if (!ALLOWED_TYPES.includes(selectedFile.type)) {
-            setFile(null);
-            setError("Choose a JPG, PNG, or WEBP image.");
+            replaceFile(null);
+            setError("Choose a JPG, PNG or WEBP image.");
             return;
         }
 
         if (selectedFile.size > MAX_FILE_SIZE) {
-            setFile(null);
-            setError("This image is larger than 10 MB. Choose a smaller file.");
+            replaceFile(null);
+            setError("That image is larger than 10 MB. Choose a smaller file.");
             return;
         }
 
-        setFile(selectedFile);
+        replaceFile(selectedFile);
     }
 
     function handleFileChange(event) {
@@ -68,82 +86,58 @@ function ReceiptUploader() {
     async function handleAnalyze() {
         if (!file || loading) return;
 
-        setLoading(true);
         setError("");
-        setStatus("Uploading your receipt...");
+        setElapsed(0);
+        setPhase("uploading");
 
         try {
             const uploadData = await uploadReceipt(file);
 
-            setStatus("Reading receipt text...");
+            setPhase("reading");
 
-            const analysisData = await analyzeReceipt(
-                uploadData.receipt_id
-            );
+            const analysisData = await analyzeReceipt(uploadData.receipt_id);
 
             if (!analysisData.receipt) {
                 throw new Error("The server returned no receipt data.");
             }
 
             setResult(analysisData);
-            setStatus("");
         } catch (err) {
             setError(err.message || "Something went wrong. Please try again.");
-            setStatus("");
         } finally {
-            setLoading(false);
+            setPhase("idle");
         }
     }
 
     function resetUpload() {
-        setFile(null);
+        replaceFile(null);
         setResult(null);
         setError("");
-        setStatus("");
-        setLoading(false);
+        setPhase("idle");
     }
 
     if (result) {
         return (
-            <section className="workspace">
-                <div className="success-line">
-                    <span className="success-mark">✓</span>
-                    <span>Receipt successfully analyzed</span>
-                </div>
-
-                <ReceiptReview
-                    key={result.receipt_id}
-                    receipt={result.receipt}
-                />
-
-                <details className="ocr-details">
-                    <summary>View original OCR output</summary>
-                    <pre>{JSON.stringify(result.ocr, null, 2)}</pre>
-                </details>
-
-                <button
-                    className="text-button"
-                    type="button"
-                    onClick={resetUpload}
-                >
-                    ← Analyze another receipt
-                </button>
-            </section>
+            <ReceiptReview
+                key={result.receipt_id}
+                receipt={result.receipt}
+                ocr={result.ocr}
+                imageUrl={previewUrl}
+                onReset={resetUpload}
+            />
         );
     }
 
     return (
-        <section className="workspace">
-            <div className="section-meta">
-                <span className="step-number">01</span>
-                <div>
-                    <h2>Upload a receipt</h2>
-                    <p>Start with a clear photo or scan of your receipt.</p>
-                </div>
-            </div>
+        <section className="upload-view">
+            <h1>Upload a receipt</h1>
+            <p className="lead">
+                We'll read the items and prices so you can check them before
+                splitting.
+            </p>
 
             <div
-                className={`upload-panel ${isDragging ? "is-dragging" : ""} ${
+                className={`dropzone ${isDragging ? "is-dragging" : ""} ${
                     file ? "has-file" : ""
                 }`}
                 onDragOver={(event) => {
@@ -158,106 +152,105 @@ function ReceiptUploader() {
                 onDrop={handleDrop}
             >
                 {file ? (
-                    <div className="file-preview">
-                        <div className="preview-image-wrap">
-                            <img
-                                src={previewUrl}
-                                alt="Selected receipt preview"
-                                className="preview-image"
-                            />
-                        </div>
+                    <div className="selected-file">
+                        <img
+                            src={previewUrl}
+                            alt="Selected receipt"
+                            className="selected-thumb"
+                        />
 
-                        <div className="file-information">
-                            <span className="file-label">SELECTED FILE</span>
+                        <div className="selected-meta">
                             <strong title={file.name}>{file.name}</strong>
-                            <span>
-                                {(file.size / (1024 * 1024)).toFixed(2)} MB
-                            </span>
+                            <span>{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
                             <button
-                                className="text-button"
+                                className="link-button"
                                 type="button"
                                 onClick={resetUpload}
                                 disabled={loading}
                             >
-                                Remove image
+                                Choose a different image
                             </button>
                         </div>
                     </div>
                 ) : (
-                    <div className="dropzone-content">
-                        <div className="upload-symbol" aria-hidden="true">
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.6"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            >
-                                <path d="M12 16V4" />
-                                <path d="m7 9 5-5 5 5" />
-                                <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
-                            </svg>
-                        </div>
+                    <div className="dropzone-empty">
+                        <svg
+                            className="dropzone-icon"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.6"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                        >
+                            <path d="M12 16V4" />
+                            <path d="m7 9 5-5 5 5" />
+                            <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
+                        </svg>
 
-                        <h3>Drop your receipt here</h3>
-                        <p>or choose an image from your device</p>
+                        <p className="dropzone-title">Drop a receipt photo here</p>
 
                         <button
-                            className="choose-file-button"
+                            className="button secondary"
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            disabled={loading}
                         >
                             Choose image
                         </button>
 
+                        <span className="hint">JPG, PNG or WEBP · up to 10 MB</span>
+
                         <input
                             ref={fileInputRef}
-                            className="file-input"
+                            className="visually-hidden"
                             type="file"
                             accept="image/jpeg,image/png,image/webp"
                             onChange={handleFileChange}
-                            disabled={loading}
+                            tabIndex={-1}
                         />
-
-                        <span className="file-requirements">
-                            JPG, PNG or WEBP · Maximum 10 MB
-                        </span>
                     </div>
                 )}
             </div>
 
             {error && (
-                <p className="upload-error" role="alert">
-                    <span>!</span>
+                <p className="notice error" role="alert">
                     {error}
                 </p>
             )}
 
-            {status && (
-                <p className="upload-status" role="status">
-                    <span className="loading-dot" />
-                    {status}
-                </p>
+            {loading && (
+                <div className="progress" role="status">
+                    <div className="progress-bar" aria-hidden="true" />
+                    <p>
+                        {phase === "uploading"
+                            ? "Uploading…"
+                            : `Reading the receipt… ${elapsed}s`}
+                    </p>
+                    {phase === "reading" && elapsed >= 8 && (
+                        <p className="hint">
+                            This can take up to a minute the first time.
+                        </p>
+                    )}
+                </div>
             )}
 
-            <div className="upload-actions">
-                <div className="privacy-note">
-                    <span aria-hidden="true">↳</span>
-                    Your receipt is processed by your SmartSplit backend.
-                </div>
-
+            <div className="actions">
                 <button
-                    className="analyze-button"
+                    className="button primary"
                     type="button"
                     onClick={handleAnalyze}
                     disabled={!file || loading}
                 >
-                    {loading ? "Processing..." : "Analyze receipt"}
-                    {!loading && <span aria-hidden="true">→</span>}
+                    {loading ? "Working…" : "Read receipt"}
                 </button>
             </div>
+
+            <ul className="tips" aria-label="Tips for a good photo">
+                {TIPS.map((tip) => (
+                    <li key={tip}>{tip}</li>
+                ))}
+            </ul>
         </section>
     );
 }

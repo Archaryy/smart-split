@@ -1,0 +1,237 @@
+{
+ "image": "a3df9eee-1e73-4448-aca8-d8b9f49e7712.jpg",
+ "line_count": 23,
+ "lines": [
+  {
+   "text": "ALFAMART CILANDAK KKO 5",
+   "confidence": 0.9921,
+   "box": [
+    180,
+    334,
+    513,
+    383
+   ]
+  },
+  {
+   "text": "PT.SUMBER ALFARIA TRIJAYA,TBK",
+   "confidence": 0.9999,
+   "box": [
+    134,
+    377,
+    556,
+    427
+   ]
+  },
+  {
+   "text": "ALFA TOWER LT.12, ALAM SUTERA,TANGERANG",
+   "confidence": 0.9993,
+   "box": [
+    64,
+    422,
+    630,
+    475
+   ]
+  },
+  {
+   "text": "NPWP：01.336.238.9-054.000",
+   "confidence": 0.9921,
+   "box": [
+    148,
+    471,
+    543,
+    519
+   ]
+  },
+  {
+   "text": "Bon",
+   "confidence": 1.0,
+   "box": [
+    59,
+    563,
+    117,
+    609
+   ]
+  },
+  {
+   "text": "1M1G-111-18037X5X Kasir : SANDI RI",
+   "confidence": 0.9791,
+   "box": [
+    149,
+    561,
+    644,
+    610
+   ]
+  },
+  {
+   "text": "SUNLG MINT 755",
+   "confidence": 0.9996,
+   "box": [
+    58,
+    656,
+    271,
+    703
+   ]
+  },
+  {
+   "text": "1 25,200",
+   "confidence": 0.9552,
+   "box": [
+    361,
+    657,
+    501,
+    704
+   ]
+  },
+  {
+   "text": "25,200",
+   "confidence": 1.0,
+   "box": [
+    547,
+    655,
+    649,
+    704
+   ]
+  },
+  {
+   "text": "Total Item",
+   "confidence": 0.9752,
+   "box": [
+    58,
+    751,
+    211,
+    794
+   ]
+  },
+  {
+   "text": "1",
+   "confidence": 0.9991,
+   "box": [
+    274,
+    754,
+    298,
+    796
+   ]
+  },
+  {
+   "text": "25,200",
+   "confidence": 1.0,
+   "box": [
+    550,
+    752,
+    650,
+    802
+   ]
+  },
+  {
+   "text": "Tunai",
+   "confidence": 1.0,
+   "box": [
+    55,
+    796,
+    138,
+    846
+   ]
+  },
+  {
+   "text": "50,000",
+   "confidence": 1.0,
+   "box": [
+    552,
+    802,
+    649,
+    851
+   ]
+  },
+  {
+   "text": "Kembalian",
+   "confidence": 1.0,
+   "box": [
+    54,
+    846,
+    197,
+    892
+   ]
+  },
+  {
+   "text": "24,800",
+   "confidence": 1.0,
+   "box": [
+    548,
+    848,
+    650,
+    903
+   ]
+  },
+  {
+   "text": "PPN",
+   "confidence": 1.0,
+   "box": [
+    54,
+    895,
+    112,
+    941
+   ]
+  },
+  {
+   "text": "2,291)",
+   "confidence": 0.9997,
+   "box": [
+    230,
+    891,
+    327,
+    941
+   ]
+  },
+  {
+   "text": "18-03-2022 06:28:44 V.2022.1.0",
+   "confidence": 0.99,
+   "box": [
+    136,
+    978,
+    622,
+    1055
+   ]
+  },
+  {
+   "text": "Tgl.",
+   "confidence": 0.9921,
+   "box": [
+    55,
+    994,
+    115,
+    1042
+   ]
+  },
+  {
+   "text": "t-",
+   "confidence": 0.6008,
+   "box": [
+    53,
+    1057,
+    84,
+    1091
+   ]
+  },
+  {
+   "text": "Kritik&Saran:1500959",
+   "confidence": 1.0,
+   "box": [
+    198,
+    1087,
+    503,
+    1139
+   ]
+  },
+  {
+   "text": "SMS/WA: 081110640888",
+   "confidence": 0.9514,
+   "box": [
+    196,
+    1134,
+    504,
+    1190
+   ]
+  }
+ ],
+ "full_text": "ALFAMART CILANDAK KKO 5\nPT.SUMBER ALFARIA TRIJAYA,TBK\nALFA TOWER LT.12, ALAM SUTERA,TANGERANG\nNPWP：01.336.238.9-054.000\nBon\n1M1G-111-18037X5X Kasir : SANDI RI\nSUNLG MINT 755\n1 25,200\n25,200\nTotal Item\n1\n25,200\nTunai\n50,000\nKembalian\n24,800\nPPN\n2,291)\n18-03-2022 06:28:44 V.2022.1.0\nTgl.\nt-\nKritik&Saran:1500959\nSMS/WA: 081110640888"
+}

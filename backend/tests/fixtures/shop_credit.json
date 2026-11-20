@@ -1,0 +1,337 @@
+{
+ "image": "305e5eb9-32ff-4808-b18c-63964ca814e6.jpg",
+ "line_count": 33,
+ "lines": [
+  {
+   "text": "u Shop",
+   "confidence": 0.9419,
+   "box": [
+    403,
+    107,
+    477,
+    136
+   ]
+  },
+  {
+   "text": "Jl. Dr. Ir. H. Soekafio Nō.19,Me",
+   "confidence": 0.9241,
+   "box": [
+    221,
+    132,
+    462,
+    153
+   ]
+  },
+  {
+   "text": "Surabaya",
+   "confidence": 0.9997,
+   "box": [
+    360,
+    153,
+    432,
+    174
+   ]
+  },
+  {
+   "text": "No. Telp",
+   "confidence": 0.9996,
+   "box": [
+    315,
+    173,
+    380,
+    194
+   ]
+  },
+  {
+   "text": "1641352023080?",
+   "confidence": 0.9427,
+   "box": [
+    303,
+    194,
+    431,
+    211
+   ]
+  },
+  {
+   "text": "2023-08-02",
+   "confidence": 1.0,
+   "box": [
+    218,
+    241,
+    303,
+    259
+   ]
+  },
+  {
+   "text": "karis",
+   "confidence": 1.0,
+   "box": [
+    534,
+    241,
+    574,
+    260
+   ]
+  },
+  {
+   "text": "08:50:32",
+   "confidence": 1.0,
+   "box": [
+    217,
+    260,
+    286,
+    281
+   ]
+  },
+  {
+   "text": "Sheila",
+   "confidence": 1.0,
+   "box": [
+    525,
+    261,
+    573,
+    280
+   ]
+  },
+  {
+   "text": "JI. Diponegoro 1, Sby",
+   "confidence": 0.998,
+   "box": [
+    417,
+    279,
+    573,
+    302
+   ]
+  },
+  {
+   "text": "No.0-4",
+   "confidence": 0.9999,
+   "box": [
+    216,
+    299,
+    271,
+    320
+   ]
+  },
+  {
+   "text": "1. Indomie Goreng",
+   "confidence": 0.9756,
+   "box": [
+    218,
+    345,
+    357,
+    365
+   ]
+  },
+  {
+   "text": "1 lusin x 36,000",
+   "confidence": 0.9772,
+   "box": [
+    225,
+    366,
+    342,
+    383
+   ]
+  },
+  {
+   "text": "Rp 36.000",
+   "confidence": 0.9596,
+   "box": [
+    496,
+    364,
+    574,
+    385
+   ]
+  },
+  {
+   "text": "2. Fruit Tea Apple",
+   "confidence": 0.9972,
+   "box": [
+    217,
+    385,
+    351,
+    405
+   ]
+  },
+  {
+   "text": "1 500 ml × 7,000",
+   "confidence": 0.9717,
+   "box": [
+    225,
+    406,
+    348,
+    423
+   ]
+  },
+  {
+   "text": "Rp 7.000",
+   "confidence": 0.9995,
+   "box": [
+    505,
+    404,
+    574,
+    426
+   ]
+  },
+  {
+   "text": "3. Belfood Sosis Bakar",
+   "confidence": 1.0,
+   "box": [
+    217,
+    424,
+    388,
+    444
+   ]
+  },
+  {
+   "text": "1 × 27,000",
+   "confidence": 0.9531,
+   "box": [
+    225,
+    445,
+    307,
+    463
+   ]
+  },
+  {
+   "text": "Rp 27.000",
+   "confidence": 0.9682,
+   "box": [
+    496,
+    444,
+    574,
+    465
+   ]
+  },
+  {
+   "text": "Total QTY:14",
+   "confidence": 0.9996,
+   "box": [
+    218,
+    495,
+    322,
+    515
+   ]
+  },
+  {
+   "text": "Sub Total",
+   "confidence": 1.0,
+   "box": [
+    217,
+    528,
+    290,
+    549
+   ]
+  },
+  {
+   "text": "Rp 70.000",
+   "confidence": 0.9493,
+   "box": [
+    496,
+    529,
+    573,
+    550
+   ]
+  },
+  {
+   "text": "Total",
+   "confidence": 1.0,
+   "box": [
+    217,
+    550,
+    265,
+    572
+   ]
+  },
+  {
+   "text": "Rp 70.000",
+   "confidence": 0.9998,
+   "box": [
+    486,
+    550,
+    575,
+    575
+   ]
+  },
+  {
+   "text": "Tipe: kredit",
+   "confidence": 0.9879,
+   "box": [
+    218,
+    615,
+    304,
+    636
+   ]
+  },
+  {
+   "text": "due: 09/08/2023",
+   "confidence": 0.9864,
+   "box": [
+    448,
+    615,
+    574,
+    635
+   ]
+  },
+  {
+   "text": "Status: Belum Lunas",
+   "confidence": 0.9999,
+   "box": [
+    218,
+    637,
+    370,
+    654
+   ]
+  },
+  {
+   "text": "Sisa limit: Rp 10.000",
+   "confidence": 0.9999,
+   "box": [
+    219,
+    657,
+    368,
+    674
+   ]
+  },
+  {
+   "text": "History Pembayaran Utang:",
+   "confidence": 1.0,
+   "box": [
+    218,
+    704,
+    418,
+    724
+   ]
+  },
+  {
+   "text": "02/08/2023 Cash",
+   "confidence": 0.9999,
+   "box": [
+    218,
+    734,
+    350,
+    754
+   ]
+  },
+  {
+   "text": "Rp 60.000",
+   "confidence": 0.9999,
+   "box": [
+    496,
+    734,
+    574,
+    755
+   ]
+  },
+  {
+   "text": "Terimakasih Telah Berbelanja",
+   "confidence": 1.0,
+   "box": [
+    287,
+    766,
+    504,
+    786
+   ]
+  }
+ ],
+ "full_text": "u Shop\nJl. Dr. Ir. H. Soekafio Nō.19,Me\nSurabaya\nNo. Telp\n1641352023080?\n2023-08-02\nkaris\n08:50:32\nSheila\nJI. Diponegoro 1, Sby\nNo.0-4\n1. Indomie Goreng\n1 lusin x 36,000\nRp 36.000\n2. Fruit Tea Apple\n1 500 ml × 7,000\nRp 7.000\n3. Belfood Sosis Bakar\n1 × 27,000\nRp 27.000\nTotal QTY:14\nSub Total\nRp 70.000\nTotal\nRp 70.000\nTipe: kredit\ndue: 09/08/2023\nStatus: Belum Lunas\nSisa limit: Rp 10.000\nHistory Pembayaran Utang:\n02/08/2023 Cash\nRp 60.000\nTerimakasih Telah Berbelanja"
+}

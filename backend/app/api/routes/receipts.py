@@ -1,11 +1,14 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from app.schemas.receipt import ReceiptUploadResponse
+from app.schemas.receipt import AnalyzeResponse, ReceiptUploadResponse
 from PIL import Image
 from pathlib import Path
 import io
+import logging
 from uuid import UUID, uuid4
 from app.services.ocr_service import extract_text
 from app.services.receipt_parser import parse_receipt_text
+
+logger = logging.getLogger("smartsplit.receipts")
 
 router = APIRouter(
     prefix="/api/receipts",
@@ -75,8 +78,10 @@ async def upload_receipt(file: UploadFile = File(...)):
 }
 
 
-@router.post("/{receipt_id}/analyze")
-async def analyze_receipt(receipt_id: str):
+@router.post("/{receipt_id}/analyze", response_model=AnalyzeResponse)
+def analyze_receipt(receipt_id: str):
+    # Plain `def`: FastAPI runs it in a worker thread, so the slow, CPU-bound
+    # OCR call does not block the event loop (health checks, other uploads).
 
     # 1. Validate receipt ID
     try:
@@ -110,12 +115,12 @@ async def analyze_receipt(receipt_id: str):
         # 4. Parse recognized text
         parsed_receipt = parse_receipt_text(ocr_result)
 
-    except Exception as error:
-        print(f"Receipt analysis failed: {error}")
+    except Exception:
+        logger.exception("Receipt analysis failed for %s", receipt_id)
 
         raise HTTPException(
             status_code=500,
-            detail="Receipt analysis failed"
+            detail="We couldn't read this receipt. Try a sharper, well-lit photo."
         )
 
     # 5. Return combined results
