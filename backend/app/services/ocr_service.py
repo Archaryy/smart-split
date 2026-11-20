@@ -5,23 +5,32 @@ from paddleocr import PaddleOCR
 
 from app.services.image_enhance import VARIANTS, load_image
 
-#initialize ocr only once
-_ocr_engine = None
-_engine_lock = threading.Lock()   # guards creation and prediction (engine is not thread-safe)
+# PP-OCRv6 "small" reads an ordinary receipt in a few seconds; "medium" is
+# noticeably more accurate on hard photos but takes about a minute on a CPU.
+MODELS = {
+    "small": ("PP-OCRv6_small_det", "PP-OCRv6_small_rec"),
+    "medium": ("PP-OCRv6_medium_det", "PP-OCRv6_medium_rec"),
+}
 
-def get_ocr_engine():
+_engines: dict[str, PaddleOCR] = {}   # each model set is loaded once, on first use
+_engine_lock = threading.Lock()       # guards creation and prediction (engines are not thread-safe)
 
-    global _ocr_engine
+def get_ocr_engine(model: str = "small"):
+    if model not in MODELS:
+        raise ValueError(f"Unknown OCR model: {model}")
+
     with _engine_lock:
-        if _ocr_engine is None:
-            # Initialize the PaddleOCR engine with English language support
-            _ocr_engine = PaddleOCR(lang='en',
-                                    use_doc_orientation_classify = False,
-                                    use_doc_unwarping = False,
-                                    use_textline_orientation = False,)
-    return _ocr_engine
+        if model not in _engines:
+            detection, recognition = MODELS[model]
+            _engines[model] = PaddleOCR(lang='en',
+                                        text_detection_model_name = detection,
+                                        text_recognition_model_name = recognition,
+                                        use_doc_orientation_classify = False,
+                                        use_doc_unwarping = False,
+                                        use_textline_orientation = False,)
+    return _engines[model]
 
-def extract_text(image_path: str | Path, variant: str = "original") -> dict:
+def extract_text(image_path: str | Path, variant: str = "original", model: str = "small") -> dict:
     """Run OCR on an image and return its text lines with positions.
 
     Args:
@@ -29,6 +38,7 @@ def extract_text(image_path: str | Path, variant: str = "original") -> dict:
         variant: pre-processing applied first - "original" (default, resize only),
             "enhanced" (contrast boost + denoise for faint/tinted/unevenly lit
             photos).
+        model: "small" (fast, default) or "medium" (slow, more accurate).
 
     Returns a dict with `lines` (text, confidence, box, poly), `full_text`, etc.
     """
@@ -42,13 +52,14 @@ def extract_text(image_path: str | Path, variant: str = "original") -> dict:
 
     image = VARIANTS[variant](load_image(image_path))
 
-    ocr = get_ocr_engine()
+    ocr = get_ocr_engine(model)
     with _engine_lock:
         results = ocr.predict(image)
 
     if not results:
         return {"image": image_path.name,
                 "variant": variant,
+                "model": model,
                 "line_count": 0,
                 "lines": [],
                 "full_text": ""}
@@ -86,6 +97,7 @@ def extract_text(image_path: str | Path, variant: str = "original") -> dict:
     return {
         "image": image_path.name,
         "variant": variant,
+        "model": model,
         "line_count": len(lines),
         "lines": lines,
         "full_text": full_text

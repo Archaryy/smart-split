@@ -7,11 +7,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    # Load the OCR models in the background so the first upload isn't slow.
+    # Load the fast OCR model in the background so the first upload isn't slow.
+    # (The slower, more accurate model loads only if a receipt needs it.)
     def warm_up():
         try:
             from app.services.ocr_service import get_ocr_engine
-            get_ocr_engine()
+            get_ocr_engine("small")
         except Exception as error:  # the first real request will report it
             print(f"OCR warm-up failed: {error}")
 

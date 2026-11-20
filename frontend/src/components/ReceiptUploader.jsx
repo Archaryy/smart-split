@@ -256,7 +256,7 @@ function ReceiptUploader() {
                     </p>
                     {phase === "reading" && elapsed >= 8 && (
                         <p className="hint">
-                            This can take up to a minute the first time.
+                            Hard-to-read receipts can take a minute or two.
                         </p>
                     )}
                 </div>

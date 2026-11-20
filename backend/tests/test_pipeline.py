@@ -65,42 +65,48 @@ def fake_receipt(items, status, confidence=0.95):
 
 class RetryPipeline(unittest.TestCase):
     def run_pipeline(self, outcomes):
-        """`outcomes` maps variant -> (ocr, receipt); returns (result, variants tried)."""
+        """`outcomes` maps (model, variant) -> (ocr, receipt); returns (result, attempts made)."""
         tried = []
 
-        def extract(_path, variant):
-            tried.append(variant)
-            return outcomes[variant][0]
+        def extract(_path, variant, model):
+            tried.append((model, variant))
+            return outcomes[(model, variant)][0]
 
         def parse(ocr):
             return next(receipt for o, receipt in outcomes.values() if o is ocr)
 
-        ocr, receipt = read_receipt("img.jpg", extract, parse, variants=tuple(outcomes))
+        ocr, receipt = read_receipt("img.jpg", extract, parse, attempts=tuple(outcomes))
         return (ocr, receipt), tried
 
     def test_good_first_read_is_final(self):
-        outcomes = {"original": fake_receipt(3, "ok"), "enhanced": fake_receipt(3, "ok")}
+        outcomes = {("small", "original"): fake_receipt(3, "ok"), ("medium", "original"): fake_receipt(3, "ok")}
         (_, receipt), tried = self.run_pipeline(outcomes)
-        self.assertEqual(tried, ["original"])
+        self.assertEqual(tried, [("small", "original")])
         self.assertEqual(len(receipt["items"]), 3)
 
-    def test_failed_first_read_falls_back_to_next_variant(self):
+    def test_failed_first_read_falls_back_to_next_attempt(self):
         outcomes = {
-            "original": fake_receipt(0, "failed"),
-            "enhanced": fake_receipt(2, "ok"),
+            ("small", "original"): fake_receipt(0, "failed"),
+            ("small", "enhanced"): fake_receipt(2, "ok"),
+            ("medium", "original"): fake_receipt(9, "ok"),
         }
         (_, receipt), tried = self.run_pipeline(outcomes)
-        self.assertEqual(tried, ["original", "enhanced"])
+        self.assertEqual(tried, [("small", "original"), ("small", "enhanced")])   # stops at first good one
         self.assertEqual(len(receipt["items"]), 2)
 
     def test_best_attempt_is_kept_when_none_is_trustworthy(self):
         outcomes = {
-            "original": fake_receipt(1, "mismatch"),
-            "enhanced": fake_receipt(3, "mismatch"),
+            ("small", "original"): fake_receipt(1, "mismatch"),
+            ("medium", "original"): fake_receipt(3, "mismatch"),
         }
         (_, receipt), tried = self.run_pipeline(outcomes)
-        self.assertEqual(tried, ["original", "enhanced"])
+        self.assertEqual(len(tried), 2)
         self.assertEqual(len(receipt["items"]), 3)                 # best of a bad lot
+
+    def test_default_order_is_cheapest_first(self):
+        from app.services.receipt_pipeline import ATTEMPTS
+        self.assertEqual(ATTEMPTS[0], ("small", "original"))
+        self.assertEqual([model for model, _ in ATTEMPTS][-1], "medium")
 
 
 if __name__ == "__main__":
